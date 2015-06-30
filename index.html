@@ -5,13 +5,18 @@
         <script src="https://cdn.rawgit.com/HenrikJoreteg/attachMediaStream/master/attachmediastream.bundle.js"></script>
 
         <script>
+          // override simplewebrtc's default to not render a video element till we hit the button
           SimpleWebRTC.prototype.handlePeerStreamAdded = function (peer) {
+
             var div = document.createElement('div');
             var button = document.createElement('button');
             button.textContent = 'Render peer video';
             div.appendChild(button);
-            peer.div = div;
             document.querySelector('#remotesVideos').appendChild(div);
+
+            //store so we can remove the element if the peer leaves
+            peer.div = div;
+
             button.onclick = function () {
               var video = attachMediaStream(peer.stream, null, {
                 disableContextMenu: false
@@ -27,11 +32,8 @@
           };
 
           var webrtc = new SimpleWebRTC({
-            // the id/element dom element that will hold "our" video
             localVideoEl: 'localVideo',
-            // the id/element dom element that will hold remote videos
             remoteVideosEl: 'remotesVideos',
-            // immediately ask for camera access
             autoRequestMedia: true
           });
 
@@ -40,6 +42,7 @@
             isReady = true;
           });
 
+          // just joins a specific room when someone types in the name in the box, and hits join
           function joinCall() {
             var input = document.querySelector('#roomName');
             var roomName = input.value;
@@ -62,14 +65,18 @@
         </script>
     </head>
     <body>
+        <!-- room name input ui -->
         <div id='joinRoom' style='padding: 20px'>
           <input id='roomName' placeholder='Choose a room name (something random but typable)' style='width: 300px; padding: 5px'/>
           <button id='join' onclick='joinCall()'>Join</button>
         </div>
-        <div id='joinedRoom' style='padding: 20px'>
-        </div>
+
+        <!-- to display the room joined message -->
+        <div id='joinedRoom' style='padding: 20px'></div>
+
         <p>Local video</p>
         <video height="100" id="localVideo"></video>
+
         <p>Remote videos</p>
         <div id="remotesVideos"></div>
     </body>
