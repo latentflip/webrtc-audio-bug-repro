@@ -16,6 +16,7 @@
               var video = attachMediaStream(peer.stream, null, {
                 disableContextMenu: false
               });
+              video.height = '150';
               div.appendChild(video);
               div.removeChild(button);
             }
@@ -34,15 +35,42 @@
             autoRequestMedia: true
           });
 
+          var isReady = false;
           webrtc.on('readyToCall', function () {
-            // you can name it anything
-            webrtc.joinRoom('asdfasdfasdfasdf');
+            isReady = true;
           });
 
+          function joinCall() {
+            var input = document.querySelector('#roomName');
+            var roomName = input.value;
+            if (roomName.length > 0) {
+              if (isReady) {
+                webrtc.joinRoom(roomName);
+              } else {
+                webtrc.on('readyToCall', function () {
+                  webrtc.joinRoom(roomName);
+                });
+              }
+
+              var joinRoomEl = document.querySelector('#joinRoom');
+              joinRoomEl.parentNode.removeChild(joinRoomEl);
+
+              var joinedRoomEl = document.querySelector('#joinedRoom');
+              joinedRoomEl.textContent = 'Joined room: ' + roomName + ' join the same room from two other tabs, on at least one other computer';
+            }
+          }
         </script>
     </head>
     <body>
-        <video height="300" id="localVideo"></video>
+        <div id='joinRoom' style='padding: 20px'>
+          <input id='roomName' placeholder='Choose a room name (something random but typable)' style='width: 300px; padding: 5px'/>
+          <button id='join' onclick='joinCall()'>Join</button>
+        </div>
+        <div id='joinedRoom' style='padding: 20px'>
+        </div>
+        <p>Local video</p>
+        <video height="100" id="localVideo"></video>
+        <p>Remote videos</p>
         <div id="remotesVideos"></div>
     </body>
 </html>
